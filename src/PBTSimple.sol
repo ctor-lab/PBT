@@ -119,15 +119,19 @@ contract PBTSimple is ERC721ReadOnly, IPBT {
     //    signatureFromChip: signature(receivingAddress + recentBlockhash), signed by an approved chip
     //
     // Contract should check that (1) recentBlockhash is a recent blockhash, (2) receivingAddress === to, and (3) the signing chip is allowlisted.
-    function _mintTokenWithChip(bytes calldata signatureFromChip, uint256 blockNumberUsedInSig)
+    function _mintTokenWithChipTo(address to, bytes calldata signatureFromChip, uint256 blockNumberUsedInSig)
         internal
         returns (uint256)
     {
         TokenData memory tokenData = _getTokenDataForChipSignature(signatureFromChip, blockNumberUsedInSig);
         uint256 tokenId = tokenData.tokenId;
-        _mint(_msgSender(), tokenId);
+        _mint(to, tokenId);
         emit PBTMint(tokenId, tokenData.chipAddress);
         return tokenId;
+    }
+
+    function _mintTokenWithChip(bytes calldata signatureFromChip, uint256 blockNumberUsedInSig) internal returns(uint256) {
+        _mintTokenWithChipTo(_msgSender(), signatureFromChip, blockNumberUsedInSig);
     }
 
     function transferTokenWithChip(bytes calldata signatureFromChip, uint256 blockNumberUsedInSig) public override {
@@ -139,19 +143,20 @@ contract PBTSimple is ERC721ReadOnly, IPBT {
         uint256 blockNumberUsedInSig,
         bool useSafeTransferFrom
     ) public override {
-        _transferTokenWithChip(signatureFromChip, blockNumberUsedInSig, useSafeTransferFrom);
+        _transferTokenWithChipTo(_msgSender(),signatureFromChip, blockNumberUsedInSig, useSafeTransferFrom);
     }
 
-    function _transferTokenWithChip(
+    function _transferTokenWithChipTo(
+        address to,
         bytes calldata signatureFromChip,
         uint256 blockNumberUsedInSig,
         bool useSafeTransferFrom
     ) internal virtual {
         uint256 tokenId = _getTokenDataForChipSignature(signatureFromChip, blockNumberUsedInSig).tokenId;
         if (useSafeTransferFrom) {
-            _safeTransfer(ownerOf(tokenId), _msgSender(), tokenId, "");
+            _safeTransfer(ownerOf(tokenId), to, tokenId, "");
         } else {
-            _transfer(ownerOf(tokenId), _msgSender(), tokenId);
+            _transfer(ownerOf(tokenId), to, tokenId);
         }
     }
 
