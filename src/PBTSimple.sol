@@ -131,7 +131,7 @@ contract PBTSimple is ERC721ReadOnly, IPBT {
     }
 
     function _mintTokenWithChip(bytes calldata signatureFromChip, uint256 blockNumberUsedInSig) internal returns(uint256) {
-        _mintTokenWithChipTo(_msgSender(), signatureFromChip, blockNumberUsedInSig);
+        return _mintTokenWithChipTo(_msgSender(), signatureFromChip, blockNumberUsedInSig);
     }
 
     function transferTokenWithChip(bytes calldata signatureFromChip, uint256 blockNumberUsedInSig) public override {
